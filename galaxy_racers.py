@@ -1,4 +1,6 @@
 import pygame
+import time
+
 
 bg = pygame.image.load('bg.jpg')
 spaceship_img = [pygame.image.load('spacecraft_left.png'),pygame.image.load('spacecraft_right.png'),pygame.image.load('spacecraft_up.png'),pygame.image.load('spacecraft_down.png')]
@@ -25,7 +27,7 @@ class spaceship(object):
 		self.hitbox_pos()
 		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 		#commented out code that makes hitbox visible
-		self.collision()
+	
 
 	def hitbox_pos(self):
 		#adjusts hitbox positioning depending on the spaceship direction
@@ -95,9 +97,17 @@ class spaceship(object):
 
 def redrawGameWindow(win):
 	global player
+	game_over = 0
+	font = pygame.font.SysFont('arial', 50, True)
+	text = font.render("Game Over!", 1, (255,255,255))
 	win.blit(bg, (0,0))
 	player.draw(win)
+	if player.collision():
+		win.blit(text, (300,400))
+		game_over = 1
 	pygame.display.update()
+
+	return game_over
 
 def main():
 	global player
@@ -120,7 +130,8 @@ def main():
 			if event.type == pygame.QUIT:
 				running = False
 
-		redrawGameWindow(win)
+		if redrawGameWindow(win):
+			running = False
 
 	pygame.quit()
 
