@@ -49,19 +49,19 @@ class spaceship(object):
 		keys = pygame.key.get_pressed()
 
 		for key in keys:
-			if keys[pygame.K_LEFT]:
+			if keys[pygame.K_LEFT] and self.dirx != 1:
 				self.dirx = -1
 				self.diry = 0
 				self.dir_index = 0
-			elif keys[pygame.K_RIGHT]:
+			elif keys[pygame.K_RIGHT] and self.dirx != -1:
 				self.dirx = 1
 				self.diry = 0
 				self.dir_index = 1
-			elif keys[pygame.K_UP]:
+			elif keys[pygame.K_UP] and self.diry != 1:
 				self.dirx = 0
 				self.diry = -1
 				self.dir_index = 2
-			elif keys[pygame.K_DOWN]:
+			elif keys[pygame.K_DOWN] and self.diry != -1:
 				self.dirx = 0
 				self.diry = 1
 				self.dir_index = 3
@@ -95,22 +95,42 @@ class spaceship(object):
 			if spaceship_rect.collidelist(wall) > -1:
 				return True
 
-def redrawGameWindow(win):
-	global player
+def redrawGameWindow(win, player):
 	game_over = 0
-	font = pygame.font.SysFont('arial', 50, True)
-	text = font.render("Game Over!", 1, (255,255,255))
 	win.blit(bg, (0,0))
 	player.draw(win)
 	if player.collision():
-		win.blit(text, (300,400))
 		game_over = 1
 	pygame.display.update()
 
 	return game_over
 
+def draw_text(surf, text, size, x, y):
+    font = pygame.font.SysFont('arial', 50, True)
+    text_surface = font.render(text, True, (255,255,255))
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
+
+def showGameStartScreen(win, WIDTH, HEIGHT):
+	clock = pygame.time.Clock()
+	win.blit(bg, (0,0))
+	draw_text(win, "Galaxy Racers", 64, WIDTH / 2, HEIGHT / 4)
+	draw_text(win, "Use arrow keys to move", 22,WIDTH / 2, HEIGHT / 2)
+	draw_text(win, "Press a key to begin", 18, WIDTH / 2, HEIGHT * 3 / 4)
+	pygame.display.flip()
+	waiting = True
+	while waiting:
+		clock.tick(60)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				return False
+			if event.type == pygame.KEYUP:
+				waiting = False
+				return True
+
 def main():
-	global player
 	pygame.init()
 	screen_width = 1000
 	screen_height = 800
@@ -130,9 +150,13 @@ def main():
 			if event.type == pygame.QUIT:
 				running = False
 
-		if redrawGameWindow(win):
-			running = False
+		if redrawGameWindow(win,player):
+			if showGameStartScreen(win,screen_width,screen_height):
+				player = spaceship(300,300,0, -1)
+			else:
+				pygame.quit()
 
-	pygame.quit()
+
+			
 
 main()
