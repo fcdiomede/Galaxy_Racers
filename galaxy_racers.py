@@ -19,12 +19,13 @@ class spaceship(object):
 		self.hitbox = (self.x + 17, self.y + 2, 31, 57)
 
 	def draw(self,win):
+		#draws the the smoke clouds
 		for rectangle in self.smoke_trail:
 			win.blit(cloud_img, (rectangle[0],rectangle[1]))
 
+		#draw the spaceship
 		win.blit(spaceship_img[self.dir_index], (self.x, self.y))
 
-		self.hitbox_pos()
 
 		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 		#commented out code that makes hitbox visible
@@ -67,8 +68,12 @@ class spaceship(object):
 				self.diry = 1
 				self.dir_index = 3
 
+		#modify where I am based on direction I am moving and velocity
 		self.x += self.vel * self.dirx
 		self.y += self.vel * self.diry
+
+		#modify where the hitbox is located
+		self.hitbox_pos()
 
 	def smoke(self):
 		#adds in smoke cloud positions to a list
@@ -77,20 +82,20 @@ class spaceship(object):
 			self.smoke_trail.append(pygame.Rect(self.x, self.y,30,30))
 
 def collision(ship, enemy, xdirection, ydirection, shiphitbox):
-	#if moving left
+	#if moving left, check if I've hit the leftmost wall
 	if xdirection == -1 and shiphitbox[0] <= 0:
 		return True
-	#if moving right
+	#if moving right, check if I've hit the rightmost wall
 	elif xdirection == 1 and shiphitbox[0] >= 980:
 		return True
-	#if moving up
+	#if moving up, check if I've hit the upper wall
 	elif ydirection == -1 and shiphitbox[1] <= 0:
 		return True
-	#else, I must be moving down
+	#else, I must be moving down, check if I've hit the lower wall
 	elif ydirection == 1 and shiphitbox[1] >= 780:
 		return True
 	
-	
+	#check if I've hit any of the smoke clouds either I've or the enemy ship has left
 	if len(ship.smoke_trail) > 3:
 		wall = ship.smoke_trail[:len(ship.smoke_trail)-3]
 		enemy_wall = enemy.smoke_trail
@@ -99,21 +104,10 @@ def collision(ship, enemy, xdirection, ydirection, shiphitbox):
 			return True
 
 def redrawGameWindow(win, player, enemy):
-	game_over = 0
 	win.blit(bg, (0,0))
-	player.move()
-	player.smoke()
 	player.draw(win)
-	computerMovement(enemy, player)
-	enemy.smoke()
 	enemy.draw(win)
-	#determine which way the enemy spaceship is moving
-	#draw the enemy spaceship
-	if collision(player, enemy, player.dirx, player.diry, player.hitbox):
-		game_over = 1
 	pygame.display.update()
-
-	return game_over
 
 def draw_text(surf, text, size, x, y):
     font = pygame.font.SysFont('arial', 50, True)
@@ -165,6 +159,7 @@ def computerMovement(ship, enemy_ship):
 
 	ship.x += ship.vel * ship.dirx
 	ship.y += ship.vel * ship.diry
+	ship.hitbox_pos()
 
 def main():
 	pygame.init()
@@ -188,10 +183,18 @@ def main():
 			if event.type == pygame.QUIT:
 				running = False
 
-		if redrawGameWindow(win,player,enemy):
-			if showGameStartScreen(win,screen_width,screen_height):
-				player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0)
 
+		player.move()
+		player.smoke()
+		computerMovement(enemy, player)
+		enemy.smoke()
+		redrawGameWindow(win,player,enemy)
+
+		if collision(player, enemy, player.dirx, player.diry, player.hitbox):
+			#if there is a collision, game must be over, go back to start screen
+			if showGameStartScreen(win,screen_width,screen_height):
+				#if player wants to play again, reset positions
+				player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0)
 				enemy = spaceship(screen_width / 2 , screen_height / 2 + 25,0, 1, 1)
 
 			else:
