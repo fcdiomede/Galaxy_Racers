@@ -19,12 +19,14 @@ class spaceship(object):
 		self.hitbox = (self.x + 17, self.y + 2, 31, 57)
 
 	def draw(self,win):
-		self.move(win)
+		self.move()
+		self.smoke()
 		for rectangle in self.smoke_trail:
 			win.blit(cloud_img, (rectangle[0],rectangle[1]))
 		win.blit(spaceship_img[self.dir_index], (self.x, self.y))
 
 		self.hitbox_pos()
+
 		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 		#commented out code that makes hitbox visible
 	
@@ -45,7 +47,7 @@ class spaceship(object):
 			self.hitbox = (self.x + 6, self.y + 23 , 37, 60)
 		
 
-	def move(self,win):
+	def move(self):
 		keys = pygame.key.get_pressed()
 
 		for key in keys:
@@ -66,15 +68,17 @@ class spaceship(object):
 				self.diry = 1
 				self.dir_index = 3
 
+		self.x += self.vel * self.dirx
+		self.y += self.vel * self.diry
+
+	def smoke(self):
 		#adds in smoke cloud positions to a list
 		self.smoke_count += 1
 		if self.smoke_count % 7 == 0:
 			self.smoke_trail.append(pygame.Rect(self.x, self.y,30,30))
 
-		self.x += self.vel * self.dirx
-		self.y += self.vel * self.diry
-
 	def collision(self):
+		#consider pulling this out of the class 
 		#if moving left
 		if self.dirx == -1 and self.hitbox[0] <= 0:
 			return True
@@ -99,6 +103,8 @@ def redrawGameWindow(win, player):
 	game_over = 0
 	win.blit(bg, (0,0))
 	player.draw(win)
+	#determine which way the enemy spaceship is moving
+	#draw the enemy spaceship
 	if player.collision():
 		game_over = 1
 	pygame.display.update()
@@ -129,6 +135,10 @@ def showGameStartScreen(win, width, height):
 			if event.type == pygame.KEYUP:
 				waiting = False
 				return True
+
+def computerMovement():
+	#change the class values for dirx, diry, and index
+	pass
 
 def main():
 	pygame.init()
