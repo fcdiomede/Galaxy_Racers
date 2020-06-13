@@ -112,12 +112,12 @@ def draw_text(surf, text, size, x, y):
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
 
-def showGameStartScreen(win, WIDTH, HEIGHT):
+def showGameStartScreen(win, width, height):
 	clock = pygame.time.Clock()
 	win.blit(bg, (0,0))
-	draw_text(win, "Galaxy Racers", 64, WIDTH / 2, HEIGHT / 4)
-	draw_text(win, "Use arrow keys to move", 22,WIDTH / 2, HEIGHT / 2)
-	draw_text(win, "Press a key to begin", 18, WIDTH / 2, HEIGHT * 3 / 4)
+	draw_text(win, "Galaxy Racers", 64, width / 2, height / 4)
+	draw_text(win, "Use arrow keys to move", 22, width/ 2, height / 2)
+	draw_text(win, "Press a key to begin", 18, width / 2, height * 3 / 4)
 	pygame.display.flip()
 	waiting = True
 	while waiting:
@@ -136,7 +136,7 @@ def main():
 	screen_height = 800
 	win = pygame.display.set_mode((screen_width,screen_height))
 
-	clock = pygame.time.Clock()
+	showGameStartScreen(win, screen_width, screen_height)
 
 	player = spaceship(300,300,0, -1)
 
