@@ -7,22 +7,21 @@ spaceship_img = [pygame.image.load('spacecraft_left.png'),pygame.image.load('spa
 cloud_img = pygame.image.load('cloud.png')
 
 class spaceship(object):
-	def __init__(self, x,y, dirx, diry):
+	def __init__(self, x,y, dirx, diry,imgindex):
 		self.x = x
 		self.y = y
 		self.dirx = diry
 		self.diry = dirx
 		self.vel = 5
-		self.dir_index = 0
+		self.dir_index = imgindex
 		self.smoke_trail = []
 		self.smoke_count = 0
 		self.hitbox = (self.x + 17, self.y + 2, 31, 57)
 
 	def draw(self,win):
-		self.move()
-		self.smoke()
 		for rectangle in self.smoke_trail:
 			win.blit(cloud_img, (rectangle[0],rectangle[1]))
+
 		win.blit(spaceship_img[self.dir_index], (self.x, self.y))
 
 		self.hitbox_pos()
@@ -77,35 +76,40 @@ class spaceship(object):
 		if self.smoke_count % 7 == 0:
 			self.smoke_trail.append(pygame.Rect(self.x, self.y,30,30))
 
-	def collision(self):
-		#consider pulling this out of the class 
-		#if moving left
-		if self.dirx == -1 and self.hitbox[0] <= 0:
+def collision(ship, enemy, xdirection, ydirection, shiphitbox):
+	#if moving left
+	if xdirection == -1 and shiphitbox[0] <= 0:
+		return True
+	#if moving right
+	elif xdirection == 1 and shiphitbox[0] >= 980:
+		return True
+	#if moving up
+	elif ydirection == -1 and shiphitbox[1] <= 0:
+		return True
+	#else, I must be moving down
+	elif ydirection == 1 and shiphitbox[1] >= 780:
+		return True
+	
+	
+	if len(ship.smoke_trail) > 3:
+		wall = ship.smoke_trail[:len(ship.smoke_trail)-3]
+		enemy_wall = enemy.smoke_trail
+		spaceship_rect = pygame.Rect(shiphitbox)
+		if spaceship_rect.collidelist(wall) > -1 or spaceship_rect.collidelist(enemy_wall) > -1:
 			return True
-		#if moving right
-		elif self.dirx == 1 and self.hitbox[0] >= 980:
-			return True
-		#if moving up
-		elif self.diry == -1 and self.hitbox[1] <= 0:
-			return True
-		#else, I must be moving down
-		elif self.diry == 1 and self.hitbox[1] >= 780:
-			return True
-		
-		
-		if len(self.smoke_trail) > 5:
-			wall = self.smoke_trail[:len(self.smoke_trail)-5]
-			spaceship_rect = pygame.Rect(self.hitbox)
-			if spaceship_rect.collidelist(wall) > -1:
-				return True
 
-def redrawGameWindow(win, player):
+def redrawGameWindow(win, player, enemy):
 	game_over = 0
 	win.blit(bg, (0,0))
+	player.move()
+	player.smoke()
 	player.draw(win)
+	computerMovement(enemy, player)
+	enemy.smoke()
+	enemy.draw(win)
 	#determine which way the enemy spaceship is moving
 	#draw the enemy spaceship
-	if player.collision():
+	if collision(player, enemy, player.dirx, player.diry, player.hitbox):
 		game_over = 1
 	pygame.display.update()
 
@@ -136,9 +140,31 @@ def showGameStartScreen(win, width, height):
 				waiting = False
 				return True
 
-def computerMovement():
+def computerMovement(ship, enemy_ship):
 	#change the class values for dirx, diry, and index
-	pass
+
+	next_posx = ship.x + ship.vel * ship.dirx
+	next_posy = ship.y + ship.vel * ship.diry
+	next_hitbox_location = (next_posx + 17, next_posy + 2, 31, 57)
+
+	if ship.dirx == 0:
+		combinations = [[-1,0,0], [1,0,1]]
+	else:
+		combinations = [[0,-1,2], [0,1,3]]
+
+	if collision(ship, enemy_ship,ship.dirx, ship.diry, next_hitbox_location):
+		for combo in combinations:
+			if not collision(ship, enemy_ship, combo[0], combo[1], next_hitbox_location):
+				ship.dirx = combo[0]
+				ship.diry = combo[1]
+				ship.dir_index = combo[2]
+				break
+			else:
+				pass
+		
+
+	ship.x += ship.vel * ship.dirx
+	ship.y += ship.vel * ship.diry
 
 def main():
 	pygame.init()
@@ -148,7 +174,9 @@ def main():
 
 	showGameStartScreen(win, screen_width, screen_height)
 
-	player = spaceship(300,300,0, -1)
+	player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0)
+
+	enemy = spaceship(screen_width / 2 , screen_height / 2 + 25 ,0, 1, 1)
 
 	# Variable to keep the main loop running
 	running = True
@@ -160,9 +188,12 @@ def main():
 			if event.type == pygame.QUIT:
 				running = False
 
-		if redrawGameWindow(win,player):
+		if redrawGameWindow(win,player,enemy):
 			if showGameStartScreen(win,screen_width,screen_height):
-				player = spaceship(300,300,0, -1)
+				player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0)
+
+				enemy = spaceship(screen_width / 2 , screen_height / 2 + 25,0, 1, 1)
+
 			else:
 				pygame.quit()
 
