@@ -1,5 +1,6 @@
 import pygame
 import time
+import random
 
 bg = pygame.image.load('bg.jpg')
 spaceship_img = [pygame.image.load('spacecraft_left.png'),pygame.image.load('spacecraft_right.png'),pygame.image.load('spacecraft_up.png'),pygame.image.load('spacecraft_down.png')]
@@ -131,30 +132,35 @@ def showGameStartScreen(win, width, height):
 				return True
 
 def computerMovement(ship, enemy_ship):
-	#change the class values for dirx, diry, and index
 
-	next_posx = ship.x + ship.vel * ship.dirx
-	next_posy = ship.y + ship.vel * ship.diry
-	next_hitbox_location = (next_posx + 17, next_posy + 2, 31, 57)
-
+	current_direction = [ship.dirx,ship.diry,ship.dir_index]
 	if ship.dirx == 0:
-		combinations = [[-1,0,0], [1,0,1]]
+		possible_directions = [current_direction,[-1,0,0], [1,0,1]]
 	else:
-		combinations = [[0,-1,2], [0,1,3]]
+		possible_directions = [current_direction,[0,-1,2], [0,1,3]]
 
-	#to do: debug why smoke collision is not being respected by enemy ship
-	if collision(ship, enemy_ship,ship.dirx, ship.diry, next_hitbox_location):
-		for combo in combinations:
-			rotated_x = ship.x + ship.vel * combo[0]
-			rotated_y = ship.y + ship.vel * combo[1]
-			rotated_hitbox = (rotated_x + 17, rotated_y + 2, 31, 57)
-			if not collision(ship, enemy_ship, combo[0], combo[1], rotated_hitbox):
-				ship.dirx = combo[0]
-				ship.diry = combo[1]
-				ship.dir_index = combo[2]
-				break
-			else:
-				pass
+	for index,direction in enumerate(possible_directions):
+		next_posx = ship.x + ship.vel * direction[0]
+		next_posy = ship.y + ship.vel * direction[1]
+		direction_hitbox = (next_posx + 17, next_posy + 2, 31, 57)
+		if collision(ship, enemy_ship,direction[0], direction[1], direction_hitbox):
+			possible_directions.pop(index)
+	
+	#favor current direction, with possibility of going in a random direction
+	if current_direction in possible_directions:
+		random_num = random.randint(0,100)
+		if random_num < 1:
+			direction = random.choice(possible_directions)
+			ship.dirx = direction[0]
+			ship.diry = direction[1]
+			ship.dir_index = direction[2]
+	else:
+		#if the current direction is not in the list, it would cause a collision
+		#so pick a random direction of the possible direction
+		direction = random.choice(possible_directions)
+		ship.dirx = direction[0]
+		ship.diry = direction[1]
+		ship.dir_index = direction[2]
 		
 	ship.x += ship.vel * ship.dirx
 	ship.y += ship.vel * ship.diry
