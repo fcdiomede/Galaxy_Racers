@@ -1,7 +1,6 @@
 import pygame
 import time
 
-
 bg = pygame.image.load('bg.jpg')
 spaceship_img = [pygame.image.load('spacecraft_left.png'),pygame.image.load('spacecraft_right.png'),pygame.image.load('spacecraft_up.png'),pygame.image.load('spacecraft_down.png')]
 cloud_img = pygame.image.load('cloud.png')
@@ -26,10 +25,8 @@ class spaceship(object):
 		#draw the spaceship
 		win.blit(spaceship_img[self.dir_index], (self.x, self.y))
 
-
 		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 		#commented out code that makes hitbox visible
-	
 
 	def hitbox_pos(self):
 		#adjusts hitbox positioning depending on the spaceship direction
@@ -46,7 +43,6 @@ class spaceship(object):
 		else:
 			self.hitbox = (self.x + 6, self.y + 23 , 37, 60)
 		
-
 	def move(self):
 		keys = pygame.key.get_pressed()
 
@@ -96,8 +92,8 @@ def collision(ship, enemy, xdirection, ydirection, shiphitbox):
 		return True
 	
 	#check if I've hit any of the smoke clouds either I've or the enemy ship has left
-	if len(ship.smoke_trail) > 3:
-		wall = ship.smoke_trail[:len(ship.smoke_trail)-3]
+	if len(ship.smoke_trail) > 5:
+		wall = ship.smoke_trail[:len(ship.smoke_trail)-5]
 		enemy_wall = enemy.smoke_trail
 		spaceship_rect = pygame.Rect(shiphitbox)
 		if spaceship_rect.collidelist(wall) > -1 or spaceship_rect.collidelist(enemy_wall) > -1:
@@ -146,9 +142,13 @@ def computerMovement(ship, enemy_ship):
 	else:
 		combinations = [[0,-1,2], [0,1,3]]
 
+	#to do: debug why smoke collision is not being respected by enemy ship
 	if collision(ship, enemy_ship,ship.dirx, ship.diry, next_hitbox_location):
 		for combo in combinations:
-			if not collision(ship, enemy_ship, combo[0], combo[1], next_hitbox_location):
+			rotated_x = ship.x + ship.vel * combo[0]
+			rotated_y = ship.y + ship.vel * combo[1]
+			rotated_hitbox = (rotated_x + 17, rotated_y + 2, 31, 57)
+			if not collision(ship, enemy_ship, combo[0], combo[1], rotated_hitbox):
 				ship.dirx = combo[0]
 				ship.diry = combo[1]
 				ship.dir_index = combo[2]
@@ -156,7 +156,6 @@ def computerMovement(ship, enemy_ship):
 			else:
 				pass
 		
-
 	ship.x += ship.vel * ship.dirx
 	ship.y += ship.vel * ship.diry
 	ship.hitbox_pos()
@@ -183,7 +182,6 @@ def main():
 			if event.type == pygame.QUIT:
 				running = False
 
-
 		player.move()
 		player.smoke()
 		computerMovement(enemy, player)
@@ -200,7 +198,5 @@ def main():
 			else:
 				pygame.quit()
 
-
-			
 
 main()
