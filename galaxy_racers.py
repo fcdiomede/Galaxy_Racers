@@ -5,9 +5,11 @@ import random
 bg = pygame.image.load('bg.jpg')
 spaceship_img = [pygame.image.load('spacecraft_left.png'),pygame.image.load('spacecraft_right.png'),pygame.image.load('spacecraft_up.png'),pygame.image.load('spacecraft_down.png')]
 cloud_img = pygame.image.load('cloud.png')
+evil_spaceship_img = [pygame.image.load('evil_spacecraft_left.png'),pygame.image.load('evil_spacecraft_right.png'),pygame.image.load('evil_spacecraft_up.png'),pygame.image.load('evil_spacecraft_down.png')]
+evil_cloud_img = pygame.image.load('evil_cloud.png')
 
 class spaceship(object):
-	def __init__(self, x,y, dirx, diry,imgindex):
+	def __init__(self, x,y, dirx, diry,imgindex,shipimg,cloudimg):
 		self.x = x
 		self.y = y
 		self.dirx = diry
@@ -17,14 +19,16 @@ class spaceship(object):
 		self.smoke_trail = []
 		self.smoke_count = 0
 		self.hitbox = (self.x + 17, self.y + 2, 31, 57)
+		self.shipimg = shipimg
+		self.cloudimg = cloudimg
 
 	def draw(self,win):
 		#draws the the smoke clouds
 		for rectangle in self.smoke_trail:
-			win.blit(cloud_img, (rectangle[0],rectangle[1]))
+			win.blit(self.cloudimg, (rectangle[0],rectangle[1]))
 
 		#draw the spaceship
-		win.blit(spaceship_img[self.dir_index], (self.x, self.y))
+		win.blit(self.shipimg[self.dir_index], (self.x, self.y))
 
 		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 		#commented out code that makes hitbox visible
@@ -113,10 +117,10 @@ def draw_text(surf, text, size, x, y):
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
 
-def showGameStartScreen(win, width, height):
+def showGameStartScreen(win, width, height, text):
 	clock = pygame.time.Clock()
 	win.blit(bg, (0,0))
-	draw_text(win, "Galaxy Racers", 64, width / 2, height / 4)
+	draw_text(win, text, 64, width / 2, height / 4)
 	draw_text(win, "Use arrow keys to move", 22, width/ 2, height / 2)
 	draw_text(win, "Press a key to begin", 18, width / 2, height * 3 / 4)
 	pygame.display.flip()
@@ -148,7 +152,7 @@ def computerMovement(ship, enemy_ship):
 	
 	#favor current direction, with possibility of going in a random direction
 	if current_direction in possible_directions:
-		random_num = random.randint(0,100)
+		random_num = random.randint(0,300)
 		if random_num < 1:
 			direction = random.choice(possible_directions)
 			ship.dirx = direction[0]
@@ -172,11 +176,11 @@ def main():
 	screen_height = 800
 	win = pygame.display.set_mode((screen_width,screen_height))
 
-	showGameStartScreen(win, screen_width, screen_height)
+	showGameStartScreen(win, screen_width, screen_height, "Galaxy Racers")
 
-	player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0)
+	player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0, spaceship_img, cloud_img)
 
-	enemy = spaceship(screen_width / 2 , screen_height / 2 + 25 ,0, 1, 1)
+	enemy = spaceship(screen_width / 2 , screen_height / 2 + 25 ,0, 1, 1, evil_spaceship_img, evil_cloud_img)
 
 	# Variable to keep the main loop running
 	running = True
@@ -196,7 +200,7 @@ def main():
 
 		if collision(player, enemy, player.dirx, player.diry, player.hitbox):
 			#if there is a collision, game must be over, go back to start screen
-			if showGameStartScreen(win,screen_width,screen_height):
+			if showGameStartScreen(win,screen_width,screen_height, "Game over! Play again?"):
 				#if player wants to play again, reset positions
 				player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0)
 				enemy = spaceship(screen_width / 2 , screen_height / 2 + 25,0, 1, 1)
