@@ -33,22 +33,22 @@ class spaceship(object):
 		win.blit(self.shipimg[self.dir_index], (self.x, self.y))
 
 		#makes hitbox visible
-		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
+		pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 
-	def hitbox_pos(self):
+	def hitbox_pos(self, dirx, diry, x, y):
 		#adjusts hitbox positioning depending on the spaceship direction
 		#if moving left
-		if self.dirx == -1:
-			self.hitbox = (self.x + 13, self.y + 6, 60, 37)
+		if dirx == -1:
+			return (x + 13, y + 6, 60, 37)
 		#if moving right
-		elif self.dirx == 1:
-			self.hitbox = (self.x + 23, self.y + 6 ,60, 37)
+		elif dirx == 1:
+			return (x + 23, y + 6 ,60, 37)
 		#if moving up
-		elif self.diry == -1:
-			self.hitbox = (self.x + 6, self.y + 13,37, 60)
+		elif diry == -1:
+			return (x + 6, y + 13,37, 60)
 		#else, I must be moving down
 		else:
-			self.hitbox = (self.x + 6, self.y + 23, 37, 60)
+			return (x + 6, y + 23, 37, 60)
 		
 	def move(self):
 		keys = pygame.key.get_pressed()
@@ -76,7 +76,7 @@ class spaceship(object):
 		self.y += self.vel * self.diry
 
 		#modify where the hitbox is located
-		self.hitbox_pos()
+		self.hitbox = self.hitbox_pos(self.dirx, self.diry, self.x, self.y)
 
 	def smoke(self):
 		#adds in smoke cloud positions to a list
@@ -153,20 +153,13 @@ def computerMovement(ship, enemy_ship):
 		#mulitply the velocity so that I look a bit ahead and give the ship time to turn
 		next_posx = (ship.x + (ship.vel * 1.7) * direction[0]) 
 		next_posy = (ship.y + (ship.vel * 1.7) * direction[1]) 
+		x_direction = direction[0]
+		y_direction = direction[1]
 
-		if direction[0] == -1:
-			direction_hitbox = (next_posx + 13, next_posy + 6, 60, 37)
-		#if moving right
-		elif direction[0] == 1:
-			direction_hitbox = (next_posx + 23, next_posy + 6, 60, 37)
-		#if moving up
-		elif direction[1] == -1:
-			direction_hitbox = (next_posx + 6, next_posy + 13, 37, 60)
-		#else, I must be moving down
-		else:
-			direction_hitbox = (next_posx + 6, next_posy + 23, 37, 60)
+		
+		predicted_hitbox = ship.hitbox_pos(x_direction, y_direction, next_posx, next_posy)
 
-		if not collision(ship, enemy_ship,direction[0], direction[1], direction_hitbox):
+		if not collision(ship, enemy_ship,direction[0], direction[1], predicted_hitbox):
 			valid_directions.append(direction)
 	
 	#favor current direction, with possibility of going in a random direction
@@ -177,9 +170,7 @@ def computerMovement(ship, enemy_ship):
 			ship.dirx = direction[0]
 			ship.diry = direction[1]
 			ship.dir_index = direction[2]
-	elif valid_directions == []:
-		pass
-	else:
+	elif len(valid_directions) > 0:
 		#if the current direction is not in the list, it would cause a collision
 		#so pick a random direction of the possible direction
 		direction = random.choice(valid_directions)
@@ -187,9 +178,11 @@ def computerMovement(ship, enemy_ship):
 		ship.diry = direction[1]
 		ship.dir_index = direction[2]
 
+	#if no valid direction to go in, continue on course
+
 	ship.x += ship.vel * ship.dirx
 	ship.y += ship.vel * ship.diry
-	ship.hitbox_pos()
+	ship.hitbox = ship.hitbox_pos(ship.dirx, ship.diry, ship.x, ship.y)
 
 def main():
 	pygame.init()
@@ -199,9 +192,9 @@ def main():
 
 	showGameStartScreen(win, screen_width, screen_height, "Galaxy Racers")
 
-	player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0, spaceship_img, cloud_img)
+	player = spaceship(screen_width / 2 - 30, screen_height / 2, 0, -1, 0, spaceship_img, cloud_img)
 
-	enemy = spaceship(screen_width / 2 , screen_height / 2 + 25 ,0, 1, 1, evil_spaceship_img, evil_cloud_img)
+	enemy = spaceship(screen_width / 2 + 30, screen_height / 2, 0, 1, 1, evil_spaceship_img, evil_cloud_img)
 
 	# Variable to keep the main loop running
 	running = True
