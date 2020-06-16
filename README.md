@@ -10,10 +10,10 @@ In this code, I practice: Object Oriented Programming, Functions, Methods, Loopi
 ### Next steps/Wish List:
 -Incorporate "smarter" AI that can make optimal choices and not just random choices
 
--Add difficulty levels: faster velocity, obstacles, smarter AI
+-Add difficulty levels: increased velocity, obstacles, smarter AI
 
 -Add ability to pick character in the inital game loading screen
 
--Add sounds
+-Add sound effects and toggle if these are on or off when playing game
 
 -Animate clouds forming behind spaceship
