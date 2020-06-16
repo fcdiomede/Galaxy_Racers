@@ -1,4 +1,4 @@
-# Galaxy_Racers
+# Galaxy Racers
 Recreation of Cloud Racer Game from Neopets
 
 In this game, you play as a spaceship. The goal is for your enemy spaceship to crash before you do! 
