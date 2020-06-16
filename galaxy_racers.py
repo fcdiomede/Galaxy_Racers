@@ -26,12 +26,14 @@ class spaceship(object):
 		#draws the the smoke clouds
 		for rectangle in self.smoke_trail:
 			win.blit(self.cloudimg, (rectangle[0],rectangle[1]))
+			#makes hitbox visible
+			#pygame.draw.rect(win, (255,0,0), rectangle,2)
 
 		#draw the spaceship
 		win.blit(self.shipimg[self.dir_index], (self.x, self.y))
 
+		#makes hitbox visible
 		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
-		#commented out code that makes hitbox visible
 
 	def hitbox_pos(self):
 		#adjusts hitbox positioning depending on the spaceship direction
@@ -46,7 +48,7 @@ class spaceship(object):
 			self.hitbox = (self.x + 6, self.y + 13,37, 60)
 		#else, I must be moving down
 		else:
-			self.hitbox = (self.x + 6, self.y + 23 , 37, 60)
+			self.hitbox = (self.x + 6, self.y + 23, 37, 60)
 		
 	def move(self):
 		keys = pygame.key.get_pressed()
@@ -104,6 +106,8 @@ def collision(ship, enemy, xdirection, ydirection, shiphitbox):
 		if spaceship_rect.collidelist(wall) > -1 or spaceship_rect.collidelist(enemy_wall) > -1:
 			return True
 
+	return False
+
 def redrawGameWindow(win, player, enemy):
 	win.blit(bg, (0,0))
 	player.draw(win)
@@ -143,29 +147,46 @@ def computerMovement(ship, enemy_ship):
 	else:
 		possible_directions = [current_direction,[0,-1,2], [0,1,3]]
 
-	for index,direction in enumerate(possible_directions):
-		next_posx = ship.x + ship.vel * direction[0]
-		next_posy = ship.y + ship.vel * direction[1]
-		direction_hitbox = (next_posx + 17, next_posy + 2, 31, 57)
-		if collision(ship, enemy_ship,direction[0], direction[1], direction_hitbox):
-			possible_directions.pop(index)
+	valid_directions = []
+
+	for direction in possible_directions:
+		#mulitply the velocity so that I look a bit ahead and give the ship time to turn
+		next_posx = (ship.x + (ship.vel * 1.7) * direction[0]) 
+		next_posy = (ship.y + (ship.vel * 1.7) * direction[1]) 
+
+		if direction[0] == -1:
+			direction_hitbox = (next_posx + 13, next_posy + 6, 60, 37)
+		#if moving right
+		elif direction[0] == 1:
+			direction_hitbox = (next_posx + 23, next_posy + 6, 60, 37)
+		#if moving up
+		elif direction[1] == -1:
+			direction_hitbox = (next_posx + 6, next_posy + 13, 37, 60)
+		#else, I must be moving down
+		else:
+			direction_hitbox = (next_posx + 6, next_posy + 23, 37, 60)
+
+		if not collision(ship, enemy_ship,direction[0], direction[1], direction_hitbox):
+			valid_directions.append(direction)
 	
 	#favor current direction, with possibility of going in a random direction
-	if current_direction in possible_directions:
+	if current_direction in valid_directions:
 		random_num = random.randint(0,300)
 		if random_num < 1:
-			direction = random.choice(possible_directions)
+			direction = random.choice(valid_directions)
 			ship.dirx = direction[0]
 			ship.diry = direction[1]
 			ship.dir_index = direction[2]
+	elif valid_directions == []:
+		pass
 	else:
 		#if the current direction is not in the list, it would cause a collision
 		#so pick a random direction of the possible direction
-		direction = random.choice(possible_directions)
+		direction = random.choice(valid_directions)
 		ship.dirx = direction[0]
 		ship.diry = direction[1]
 		ship.dir_index = direction[2]
-		
+
 	ship.x += ship.vel * ship.dirx
 	ship.y += ship.vel * ship.diry
 	ship.hitbox_pos()
@@ -198,15 +219,20 @@ def main():
 		enemy.smoke()
 		redrawGameWindow(win,player,enemy)
 
-		if collision(player, enemy, player.dirx, player.diry, player.hitbox):
-			#if there is a collision, game must be over, go back to start screen
-			if showGameStartScreen(win,screen_width,screen_height, "Game over! Play again?"):
-				#if player wants to play again, reset positions
-				player = spaceship(screen_width / 2, screen_height / 2 - 25,0, -1, 0)
-				enemy = spaceship(screen_width / 2 , screen_height / 2 + 25,0, 1, 1)
+
+		if collision(player, enemy, player.dirx, player.diry, player.hitbox) or collision(enemy, player, enemy.dirx, enemy.diry, enemy.hitbox):
+			if collision(player, enemy, player.dirx, player.diry, player.hitbox):
+				display = "You ran out of sky! Better luck next time?"
+			else:
+				display = "Sweet flying! You win! Play again?"
+
+			if showGameStartScreen(win,screen_width,screen_height, display):
+			 	#if player wants to play again, reset positions
+				player = spaceship(screen_width / 2 - 30, screen_height / 2, 0, -1, 0,spaceship_img, cloud_img)
+				enemy = spaceship(screen_width / 2 + 30, screen_height / 2, 0, 1, 1, evil_spaceship_img, evil_cloud_img)
 
 			else:
-				pygame.quit()
+			 	pygame.quit()
 
 
 main()
