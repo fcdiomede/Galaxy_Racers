@@ -18,4 +18,8 @@ In this code, I utilized: Object Oriented Programming, Functions, Methods, Loopi
 
 -Animate clouds forming behind spaceship
 
-![Demo Screenshot](/galaxy_racers_demo.png/?raw=true)
+### Action Shots:
+
+![Demo Screenshot 1](/galaxy_racers_demo.png/?raw=true)
+
+![Demo Screenshot 2](/galaxy_racers_demo_2.png/?raw=true)
