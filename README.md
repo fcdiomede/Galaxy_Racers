@@ -17,3 +17,5 @@ In this code, I utilized: Object Oriented Programming, Functions, Methods, Loopi
 -Add sound effects and toggle if these are on or off when playing game
 
 -Animate clouds forming behind spaceship
+
+![Demo Screenshot](/galaxy_racers_demo.png/?raw=true)
