@@ -33,7 +33,7 @@ class spaceship(object):
 		win.blit(self.shipimg[self.dir_index], (self.x, self.y))
 
 		#makes hitbox visible
-		pygame.draw.rect(win, (255,0,0), self.hitbox,2)
+		#pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 
 	def hitbox_pos(self, dirx, diry, x, y):
 		#adjusts hitbox positioning depending on the spaceship direction
@@ -106,6 +106,7 @@ def collision(ship, enemy, xdirection, ydirection, shiphitbox):
 		if spaceship_rect.collidelist(wall) > -1 or spaceship_rect.collidelist(enemy_wall) > -1:
 			return True
 
+	#if I haven't hit anything, no collision, so return False
 	return False
 
 def redrawGameWindow(win, player, enemy):
@@ -114,18 +115,19 @@ def redrawGameWindow(win, player, enemy):
 	enemy.draw(win)
 	pygame.display.update()
 
-def draw_text(surf, text, size, x, y):
+def draw_text(win, text, size, x, y):
+	#define text parameters
     font = pygame.font.SysFont('arial', 50, True)
     text_surface = font.render(text, True, (255,255,255))
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
-    surf.blit(text_surface, text_rect)
+    win.blit(text_surface, text_rect)
 
 def showGameStartScreen(win, width, height, text):
 	clock = pygame.time.Clock()
 	win.blit(bg, (0,0))
 	draw_text(win, text, 64, width / 2, height / 4)
-	draw_text(win, "Use arrow keys to move", 22, width/ 2, height / 2)
+	draw_text(win, "Use arrow keys to move", 22, width / 2, height / 2)
 	draw_text(win, "Press a key to begin", 18, width / 2, height * 3 / 4)
 	pygame.display.flip()
 	waiting = True
@@ -140,8 +142,9 @@ def showGameStartScreen(win, width, height, text):
 				return True
 
 def computerMovement(ship, enemy_ship):
-
+	#determine current direction
 	current_direction = [ship.dirx,ship.diry,ship.dir_index]
+	#exclude moving directly backwards as an option
 	if ship.dirx == 0:
 		possible_directions = [current_direction,[-1,0,0], [1,0,1]]
 	else:
@@ -155,13 +158,13 @@ def computerMovement(ship, enemy_ship):
 		next_posy = (ship.y + (ship.vel * 1.7) * direction[1]) 
 		x_direction = direction[0]
 		y_direction = direction[1]
-
-		
+		#determine where my hitbox would be
 		predicted_hitbox = ship.hitbox_pos(x_direction, y_direction, next_posx, next_posy)
-
+		#if the predectied hitbox doesn't cause a collision, I can move in that direction
 		if not collision(ship, enemy_ship,direction[0], direction[1], predicted_hitbox):
 			valid_directions.append(direction)
 	
+	#pick a direction to move in
 	#favor current direction, with possibility of going in a random direction
 	if current_direction in valid_directions:
 		random_num = random.randint(0,300)
